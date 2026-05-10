@@ -1,0 +1,25 @@
+{
+  "entities": {
+    "Assessment": {
+      "title": "School Risk Assessment",
+      "description": "A detailed sector assessment for a school impact log.",
+      "type": "object",
+      "properties": {
+        "schoolName": { "type": "string" },
+        "hazardType": { "type": "string" },
+        "province": { "type": "string" },
+        "assessmentDate": { "type": "string" },
+        "status": { "type": "string", "enum": ["draft", "submitted"] },
+        "userId": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["schoolName", "hazardType", "province", "assessmentDate", "userId"]
+    }
+  },
+  "firestore": {
+    "/assessments/{assessmentId}": {
+      "schema": "Assessment",
+      "description": "Collection of school risk assessments."
+    }
+  }
+}

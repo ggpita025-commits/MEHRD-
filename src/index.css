@@ -1,0 +1,19 @@
+@import "tailwindcss";
+@import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
+
+.thin-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

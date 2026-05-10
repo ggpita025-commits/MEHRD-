@@ -1,0 +1,6 @@
+{
+  "name": "Western Province Education Provider (WPEP) School Risk Assessment",
+  "description": "Offline-first Detailed Sector Assessment (DSA) form for Solomon Islands schools to log hazard impacts during disasters.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": []
+}
