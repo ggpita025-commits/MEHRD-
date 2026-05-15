@@ -565,6 +565,12 @@ export default function App() {
     }
   };
 
+  const handleSaveDraft = async () => {
+    await dbService.saveDraft(formData);
+    setLastSaved(new Date().toLocaleTimeString());
+    alert('Draft saved to local storage!');
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900">
       {/* Sidebar */}
@@ -883,6 +889,14 @@ export default function App() {
           </div>
           {view === 'form' && (
             <div className="flex items-center gap-3">
+              <button 
+                onClick={handleSaveDraft}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
+              >
+                <Save size={16} className="text-slate-400" />
+                Save Draft
+              </button>
+              <div className="h-6 w-px bg-slate-200 mx-1 hidden sm:block" />
               <button 
                 onClick={() => setActiveSection(prev => Math.max(0, prev - 1))}
                 disabled={activeSection === 0}
@@ -2321,7 +2335,30 @@ const AnalysisDashboard = ({ assessments }: { assessments: any[] }) => {
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [isSavingAI, setIsSavingAI] = useState(false);
+  const [aiHistory, setAiHistory] = useState<any[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const dashboardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetchAIHistory();
+  }, []);
+
+  const fetchAIHistory = async () => {
+    setIsLoadingHistory(true);
+    try {
+      const { data, error } = await supabase
+        .from('analysis_history')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      setAiHistory(data || []);
+    } catch (error) {
+      console.error('Fetch AI History failed:', error);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
 
   const saveAIAnalysis = async () => {
     if (!aiSummary || filtered.length === 0) return;
@@ -2339,6 +2376,7 @@ const AnalysisDashboard = ({ assessments }: { assessments: any[] }) => {
         });
       if (error) throw error;
       alert('AI Analysis saved to cloud history!');
+      fetchAIHistory();
     } catch (error) {
       console.error('Save AI Analysis failed:', error);
       alert('Failed to save analysis. Ensure the analysis_history table exists in your Supabase database.');
@@ -2724,6 +2762,36 @@ const AnalysisDashboard = ({ assessments }: { assessments: any[] }) => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {aiHistory.length > 0 && !aiSummary && (
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <History size={14} className="text-slate-400" />
+              Recent AI Analysis Reports
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {aiHistory.map((report) => (
+                <button
+                  key={report.id}
+                  onClick={() => setAiSummary(report.summary)}
+                  className="text-left p-4 rounded-xl border border-slate-100 hover:border-purple-200 hover:bg-purple-50/30 transition-all group"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full uppercase tracking-tight">
+                      {report.hazard_filter === 'All' ? 'Multi-Hazard' : report.hazard_filter}
+                    </span>
+                    <span className="text-[10px] font-medium text-slate-400">
+                      {new Date(report.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 line-clamp-2 italic">
+                    {report.summary}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
